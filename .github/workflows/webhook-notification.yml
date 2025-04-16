@@ -1,0 +1,35 @@
+name: Webhook Notification Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  notify_webhook:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Trigger Webhook Notification
+        if: always()  # Ensure the webhook is triggered even if the job fails
+        uses: peter-evans/webhook-action@v2
+        with:
+          url: ${{ secrets.WEBHOOK_URL }}  # The webhook URL stored in GitHub secrets
+          method: POST
+          data: |
+            {
+              "incident-description": "Workflow run for repository: ${{ github.repository }}",
+              "severity": "${{ job.status == 'success' && 'low' || 'high' }}",
+              "time-when-workflow-started": "${{ github.event.head_commit.timestamp }}",
+              "user": "${{ github.actor }}",
+              "workspace": "${{ github.workspace }}",
+              "status": "${{ job.status }}"
+            }
+          headers: |
+            Content-Type: application/json
