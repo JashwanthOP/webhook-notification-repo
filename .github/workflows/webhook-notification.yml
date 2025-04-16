@@ -3,25 +3,31 @@ name: Webhook Notification Workflow
 on:
   push:
     branches:
-      - main
+      - main  # Trigger on push to main branch
   pull_request:
     branches:
-      - main
+      - main  # Trigger on pull requests to main branch
 
 jobs:
   notify_webhook:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # This job will run on an Ubuntu machine
 
     steps:
+      # Step 1: Checkout the repository code
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      # Step 2: Send the webhook notification (regardless of the job status)
       - name: Trigger Webhook Notification
-        if: always()  # Ensure the webhook is triggered even if the job fails
-        uses: peter-evans/webhook-action@v2
+        if: always()  # Ensures the webhook is triggered even on failure
+        uses: peter-evans/webhook-action@v2  # Using webhook-action by Peter Evans
         with:
-          url: ${{ secrets.WEBHOOK_URL }}  # The webhook URL stored in GitHub secrets
-          method: POST
+          # URL of the Webhook (stored securely in GitHub Secrets)
+          url: ${{ secrets.WEBHOOK_URL }}  # This should be stored in GitHub Secrets
+          
+          method: POST  # The HTTP method to send the request
+          
+          # The payload data to be sent in JSON format
           data: |
             {
               "incident-description": "Workflow run for repository: ${{ github.repository }}",
@@ -31,5 +37,7 @@ jobs:
               "workspace": "${{ github.workspace }}",
               "status": "${{ job.status }}"
             }
+          
+          # Custom headers (usually used for security, in this case we specify JSON)
           headers: |
             Content-Type: application/json
