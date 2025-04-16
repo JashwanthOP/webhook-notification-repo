@@ -6,38 +6,26 @@ on:
       - main  # Trigger on push to main branch
   pull_request:
     branches:
-      - main  # Trigger on pull requests to main branch
+      - main  # Trigger on PR to main branch
 
 jobs:
-  notify_webhook:
-    runs-on: ubuntu-latest  # This job will run on an Ubuntu machine
+  send-webhook:
+    runs-on: ubuntu-latest  # Use an Ubuntu runner
 
     steps:
-      # Step 1: Checkout the repository code
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Step 2: Send the webhook notification (regardless of the job status)
-      - name: Trigger Webhook Notification
-        if: always()  # Ensures the webhook is triggered even on failure
-        uses: peter-evans/webhook-action@v2  # Using webhook-action by Peter Evans
-        with:
-          # URL of the Webhook (stored securely in GitHub Secrets)
-          url: ${{ secrets.WEBHOOK_URL }}  # This should be stored in GitHub Secrets
-          
-          method: POST  # The HTTP method to send the request
-          
-          # The payload data to be sent in JSON format
-          data: |
-            {
-              "incident-description": "Workflow run for repository: ${{ github.repository }}",
-              "severity": "${{ job.status == 'success' && 'low' || 'high' }}",
-              "time-when-workflow-started": "${{ github.event.head_commit.timestamp }}",
-              "user": "${{ github.actor }}",
-              "workspace": "${{ github.workspace }}",
-              "status": "${{ job.status }}"
-            }
-          
-          # Custom headers (usually used for security, in this case we specify JSON)
-          headers: |
-            Content-Type: application/json
+      - name: Send Webhook Notification
+        if: always()  # Send webhook even if the job fails
+        run: |
+          curl -X POST ${{ secrets.WEBHOOK_URL }} \
+          -H "Content-Type: application/json" \
+          -d '{
+            "message": "GitHub workflow triggered for repository: ${{ github.repository }}",
+            "status": "${{ job.status }}",
+            "event": "${{ github.event_name }}",
+            "actor": "${{ github.actor }}",
+            "branch": "${{ github.ref }}",
+            "timestamp": "${{ github.event.head_commit.timestamp }}"
+          }'
