@@ -16,11 +16,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Send Webhook Notification to Slack
+      - name: Send Webhook Notification
         if: always()  # Send webhook even if the job fails
         run: |
           curl -X POST ${{ secrets.WEBHOOK_URL }} \
           -H "Content-Type: application/json" \
           -d '{
-            "text": "GitHub workflow triggered for repository: ${{ github.repository }}\n\nStatus: ${{ job.status }}\nTriggered by: ${{ github.actor }}\nBranch: ${{ github.ref }}\nTimestamp: ${{ github.event.head_commit.timestamp }}"
+            "incident-description": "GitHub workflow triggered for repository: ${{ github.repository }}",
+            "user": "${{ github.actor }}",
+            "severity": "${{ job.status == 'success' && 'low' || 'high' }}"
           }'
