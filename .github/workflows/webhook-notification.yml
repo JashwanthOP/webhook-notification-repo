@@ -18,7 +18,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
           HTML_CONTENT=$(cat index.html | sed 's/"/\\"/g' | tr '\n' ' ')
-          curl -X POST "$SLACK_WEBHOOK_URL" \
+          curl -X POST "$WEBHOOK_URL" \
           -H 'Content-type: application/json' \
           --data '{
             "blocks": [
