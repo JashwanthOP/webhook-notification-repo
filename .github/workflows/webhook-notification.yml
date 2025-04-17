@@ -81,14 +81,11 @@ jobs:
 EOF
           echo "html_report=$HTML_CONTENT" >> $GITHUB_ENV
 
-      - name: Send Webhook Notification with HTML Report
+      - name: Send Webhook Notification with HTML Report to Slack
         if: always()  # Send webhook even if the job fails
-        run: |
-          curl -X POST ${{ secrets.WEBHOOK_URL }} \
-          -H "Content-Type: application/json" \
-          -d '{
-            "incident-description": "GitHub workflow triggered for repository: '"${{ github.repository }}"'",
-            "user": "'"${{ github.actor }}"'",
-            "severity": "'"${{ job.status == 'success' && 'low' || 'high' }}"'",
-            "html_report": "'"${{ env.html_report }}"'"
-          }'
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          payload-file-path: ".github/EmailTemplates/github-workflow-details.html"
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
