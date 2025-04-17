@@ -61,8 +61,8 @@ jobs:
           curl -X POST ${{ secrets.WEBHOOK_URL }} \
           -H "Content-Type: application/json" \
           -d '{
-            "incident-description": "GitHub workflow triggered for repository: ${{ github.repository }}",
-            "user": "${{ github.actor }}",
-            "severity": "${{ job.status == 'success' && 'low' || 'high' }}",
-            "html_report": "'$(cat .github/EmailTemplates/github-workflow-details.html)'"
-          }'
+            "incident-description": "GitHub workflow triggered for repository: '"${{ github.repository }}"'",
+            "user": "'"${{ github.actor }}"'",
+            "severity": "'"${{ job.status == 'success' && 'low' || 'high' }}"'",
+            "html_report": "'"$(cat .github/EmailTemplates/github-workflow-details.html)"'"
+        }'
