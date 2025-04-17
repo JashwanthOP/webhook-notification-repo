@@ -3,14 +3,14 @@ name: Webhook Notification Workflow
 on:
   push:
     branches:
-      - main
+      - main  # Trigger on push to main branch
   pull_request:
     branches:
-      - main
+      - main  # Trigger on PR to main branch
 
 jobs:
   send-webhook:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Use an Ubuntu runner
 
     steps:
       - name: Checkout repository
@@ -44,7 +44,7 @@ jobs:
           export RECENT_COMMIT_AUTHOR_EMAIL="${{ steps.set_details.outputs.recent_commit_author_email }}"
           export WORKFLOW_RUN_ID="${{ steps.set_details.outputs.workflow_run_id }}"
           export WORKFLOW_NAME="${{ steps.set_details.outputs.workflow_name }}"
-          
+
           # Update the HTML report with commit and workflow details
           sed -i -e "s|#WORKFLOW_RUN_ID|$WORKFLOW_RUN_ID|g" \
               -e "s|#WORKFLOW_NAME|$WORKFLOW_NAME|" \
@@ -64,5 +64,5 @@ jobs:
             "incident-description": "GitHub workflow triggered for repository: '"${{ github.repository }}"'",
             "user": "'"${{ github.actor }}"'",
             "severity": "'"${{ job.status == 'success' && 'low' || 'high' }}"'",
-            "html_report": "'"$(cat .github/EmailTemplates/github-workflow-details.html)"'"
+            "html_report": "'"$(cat .github/EmailTemplates/github-workflow-details.html | jq -R .)"'"
           }'
