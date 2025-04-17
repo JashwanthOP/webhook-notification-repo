@@ -34,54 +34,7 @@ jobs:
           echo "workflow_run_id=$WORKFLOW_RUN_ID" >> $GITHUB_ENV
           echo "workflow_name=$WORKFLOW_NAME" >> $GITHUB_ENV
 
-      - name: Create HTML Report (local)
-        id: create_html_report
-        run: |
-          HTML_CONTENT=$(cat <<EOF
-<!DOCTYPE html>
-<html lang="en">
-<body>
-  <div>
-    <h4>Workflow Details</h4>
-    <table cellspacing="3" bgcolor="#000000">
-      <tr bgcolor="#ffffff">
-        <th>Workflow Run Id</th>
-        <th>Workflow Name</th>
-        <th>Image Name</th>
-      </tr>
-      <tr bgcolor="#ffffff">
-        <td><a href="https://github.com/${{ github.repository }}/runs/#${{ env.workflow_run_id }}">${{ env.workflow_run_id }}</a></td>
-        <td>${{ env.workflow_name }}</td>
-        <td>${{ env.recent_commit_hash }}</td>
-      </tr>
-    </table>
-  </div>
-  
-  <div>
-    <h4>Recent Commit Details</h4>
-    <table cellspacing="3" bgcolor="#000000">
-      <tr bgcolor="#ffffff">
-        <th>Commit Hash</th>
-        <th>Commit Date</th>
-        <th>Commit Title</th>
-        <th>Commit Author Name</th>
-        <th>Commit Author Email</th>
-      </tr>
-      <tr bgcolor="#ffffff">
-        <td><a href="https://github.com/${{ github.repository }}/commit/${{ env.recent_commit_hash }}">${{ env.recent_commit_hash }}</a></td>
-        <td>${{ env.recent_commit_date }}</td>
-        <td>${{ env.recent_commit_title }}</td>
-        <td>${{ env.recent_commit_author_name }}</td>
-        <td>${{ env.recent_commit_author_email }}</td>
-      </tr>
-    </table>
-  </div>
-</body>
-</html>
-EOF
-          echo "html_report=$HTML_CONTENT" >> $GITHUB_ENV
-
-      - name: Send Webhook Notification with HTML Report
+      - name: Send Webhook Notification with Email Template
         if: always()  # Send webhook even if the job fails
         uses: slackapi/slack-github-action@v2.0.0
         with:
@@ -89,3 +42,4 @@ EOF
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+
