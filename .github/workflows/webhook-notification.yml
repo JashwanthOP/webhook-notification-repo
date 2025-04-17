@@ -26,26 +26,17 @@ jobs:
           export RECENT_COMMIT_AUTHOR_EMAIL="$(git show --format="%ae" -s)"
           export WORKFLOW_RUN_ID="${{ github.run_id }}"
           export WORKFLOW_NAME="${{ github.workflow }}"
-          echo "##[set-output name=recent_commit_hash;]$RECENT_COMMIT_HASH"
-          echo "##[set-output name=recent_commit_date;]$RECENT_COMMIT_DATE"
-          echo "##[set-output name=recent_commit_title;]$RECENT_COMMIT_TITLE"
-          echo "##[set-output name=recent_commit_author_name;]$RECENT_COMMIT_AUTHOR_NAME"
-          echo "##[set-output name=recent_commit_author_email;]$RECENT_COMMIT_AUTHOR_EMAIL"
-          echo "##[set-output name=workflow_run_id;]$WORKFLOW_RUN_ID"
-          echo "##[set-output name=workflow_name;]$WORKFLOW_NAME"
+          echo "recent_commit_hash=$RECENT_COMMIT_HASH" >> $GITHUB_ENV
+          echo "recent_commit_date=$RECENT_COMMIT_DATE" >> $GITHUB_ENV
+          echo "recent_commit_title=$RECENT_COMMIT_TITLE" >> $GITHUB_ENV
+          echo "recent_commit_author_name=$RECENT_COMMIT_AUTHOR_NAME" >> $GITHUB_ENV
+          echo "recent_commit_author_email=$RECENT_COMMIT_AUTHOR_EMAIL" >> $GITHUB_ENV
+          echo "workflow_run_id=$WORKFLOW_RUN_ID" >> $GITHUB_ENV
+          echo "workflow_name=$WORKFLOW_NAME" >> $GITHUB_ENV
 
       - name: Create HTML Report (local)
         id: create_html_report
         run: |
-          # Generate HTML content dynamically
-          export RECENT_COMMIT_HASH="${{ steps.set_details.outputs.recent_commit_hash }}"
-          export RECENT_COMMIT_DATE="${{ steps.set_details.outputs.recent_commit_date }}"
-          export RECENT_COMMIT_TITLE="${{ steps.set_details.outputs.recent_commit_title }}"
-          export RECENT_COMMIT_AUTHOR_NAME="${{ steps.set_details.outputs.recent_commit_author_name }}"
-          export RECENT_COMMIT_AUTHOR_EMAIL="${{ steps.set_details.outputs.recent_commit_author_email }}"
-          export WORKFLOW_RUN_ID="${{ steps.set_details.outputs.workflow_run_id }}"
-          export WORKFLOW_NAME="${{ steps.set_details.outputs.workflow_name }}"
-          
           HTML_CONTENT=$(cat <<EOF
 <!DOCTYPE html>
 <html lang="en">
@@ -59,9 +50,9 @@ jobs:
         <th>Image Name</th>
       </tr>
       <tr bgcolor="#ffffff">
-        <td><a href="https://github.com/${{ github.repository }}/runs/#${WORKFLOW_RUN_ID}">${WORKFLOW_RUN_ID}</a></td>
-        <td>${WORKFLOW_NAME}</td>
-        <td>${{ steps.set_details.outputs.recent_commit_hash }}</td>
+        <td><a href="https://github.com/${{ github.repository }}/runs/#${{ env.workflow_run_id }}">${{ env.workflow_run_id }}</a></td>
+        <td>${{ env.workflow_name }}</td>
+        <td>${{ env.recent_commit_hash }}</td>
       </tr>
     </table>
   </div>
@@ -77,18 +68,18 @@ jobs:
         <th>Commit Author Email</th>
       </tr>
       <tr bgcolor="#ffffff">
-        <td><a href="https://github.com/${{ github.repository }}/commit/${{ steps.set_details.outputs.recent_commit_hash }}">${{ steps.set_details.outputs.recent_commit_hash }}</a></td>
-        <td>${{ steps.set_details.outputs.recent_commit_date }}</td>
-        <td>${{ steps.set_details.outputs.recent_commit_title }}</td>
-        <td>${{ steps.set_details.outputs.recent_commit_author_name }}</td>
-        <td>${{ steps.set_details.outputs.recent_commit_author_email }}</td>
+        <td><a href="https://github.com/${{ github.repository }}/commit/${{ env.recent_commit_hash }}">${{ env.recent_commit_hash }}</a></td>
+        <td>${{ env.recent_commit_date }}</td>
+        <td>${{ env.recent_commit_title }}</td>
+        <td>${{ env.recent_commit_author_name }}</td>
+        <td>${{ env.recent_commit_author_email }}</td>
       </tr>
     </table>
   </div>
 </body>
 </html>
 EOF
-          echo "::set-output name=html_report::$HTML_CONTENT"
+          echo "html_report=$HTML_CONTENT" >> $GITHUB_ENV
 
       - name: Send Webhook Notification with HTML Report
         if: always()  # Send webhook even if the job fails
@@ -99,5 +90,5 @@ EOF
             "incident-description": "GitHub workflow triggered for repository: '"${{ github.repository }}"'",
             "user": "'"${{ github.actor }}"'",
             "severity": "'"${{ job.status == 'success' && 'low' || 'high' }}"'",
-            "html_report": "'"${{ steps.create_html_report.outputs.html_report }}"'"
+            "html_report": "'"${{ env.html_report }}"'"
           }'
