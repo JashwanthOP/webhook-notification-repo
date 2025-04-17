@@ -65,5 +65,5 @@ jobs:
             "incident-description": "GitHub workflow triggered for repository: '"${{ github.repository }}"'",
             "user": "'"${{ github.actor }}"'",
             "severity": "'"${{ job.status == 'success' && 'low' || 'high' }}"'",
-            "html_report": "'"$(cat .github/EmailTemplates/github-workflow-details.html)"'"
-        }'
+            "html_report": "'"$(cat .github/EmailTemplates/github-workflow-details.html | jq -R .)"'"
+          }'
