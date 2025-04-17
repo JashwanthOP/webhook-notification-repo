@@ -12,15 +12,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Read HTML content and send to Slack
-        env:
-          WEBHOOK_URL: ${{ WEBHOOK_URL }}
+      - name: Send HTML content to Slack
         run: |
           if [ -f "index.html" ]; then
-            # Read and escape HTML content safely
             HTML_CONTENT=$(jq -Rs . < index.html)
 
-            curl -X POST "$WEBHOOK_URL" \
+            curl -X POST "${{ secrets.WEBHOOK_URL }}" \
             -H "Content-type: application/json" \
             --data "{
               \"blocks\": [
