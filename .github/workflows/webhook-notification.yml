@@ -14,7 +14,7 @@ jobs:
 
       - name: Read HTML content and send to Slack
         env:
-          SLACK_WEBHOOK_URL: ${{ WEBHOOK_URL }}
+          WEBHOOK_URL: ${{ WEBHOOK_URL }}
         run: |
           if [ -f "index.html" ]; then
             # Read and escape HTML content safely
