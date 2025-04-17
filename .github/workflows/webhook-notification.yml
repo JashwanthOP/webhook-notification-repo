@@ -3,10 +3,10 @@ name: Webhook Notification Workflow
 on:
   push:
     branches:
-      - main  # Trigger on push to main branch
+      - main
   pull_request:
     branches:
-      - main  # Trigger on PR to main branch
+      - main
 
 jobs:
   send-webhook:
