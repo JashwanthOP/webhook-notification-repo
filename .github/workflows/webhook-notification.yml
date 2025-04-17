@@ -1,9 +1,8 @@
-name: Send HTML File to Slack
+name: Send HTML Content to Slack
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   notifySlack:
@@ -15,26 +14,25 @@ jobs:
 
       - name: Read HTML content and send to Slack
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ WEBHOOK_URL }}
         run: |
-          HTML_CONTENT=$(cat index.html | sed 's/"/\\"/g' | tr '\n' ' ')
-          curl -X POST "$WEBHOOK_URL" \
-          -H 'Content-type: application/json' \
-          --data '{
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "*📄 index.html file pushed to main:*"
+          if [ -f "index.html" ]; then
+            # Read and escape HTML content safely
+            HTML_CONTENT=$(jq -Rs . < index.html)
+
+            curl -X POST "$WEBHOOK_URL" \
+            -H "Content-type: application/json" \
+            --data "{
+              \"blocks\": [
+                {
+                  \"type\": \"section\",
+                  \"text\": {
+                    \"type\": \"mrkdwn\",
+                    \"text\": \"*📄 index.html content:* \n\`\`\`$HTML_CONTENT\`\`\`\"
+                  }
                 }
-              },
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "```'"$HTML_CONTENT"'```"
-                }
-              }
-            ]
-          }'
+              ]
+            }"
+          else
+            echo "index.html not found"
+          fi
