@@ -58,11 +58,15 @@ jobs:
       - name: Send Webhook Notification with HTML Report
         if: always()  # Send webhook even if the job fails
         run: |
+          # Check if the HTML report exists and echo its content for debugging
+          cat .github/EmailTemplates/github-workflow-details.html
+          
+          # Send the webhook with HTML content
           curl -X POST ${{ secrets.WEBHOOK_URL }} \
           -H "Content-Type: application/json" \
           -d '{
             "incident-description": "GitHub workflow triggered for repository: '"${{ github.repository }}"'",
             "user": "'"${{ github.actor }}"'",
             "severity": "'"${{ job.status == 'success' && 'low' || 'high' }}"'",
-            "html_report": "'"$(cat .github/EmailTemplates/github-workflow-details.html)"'"
+            "html_report": "'"$(cat .github/EmailTemplates/github-workflow-details.html | base64)"'"
           }'
