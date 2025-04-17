@@ -10,7 +10,7 @@ on:
 
 jobs:
   send-webhook:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Use an Ubuntu runner
 
     steps:
       - name: Checkout repository
@@ -37,7 +37,7 @@ jobs:
       - name: Create HTML Report (local)
         id: create_html_report
         run: |
-          cd .github/EmailTemplates
+          # Generate HTML content dynamically
           export RECENT_COMMIT_HASH="${{ steps.set_details.outputs.recent_commit_hash }}"
           export RECENT_COMMIT_DATE="${{ steps.set_details.outputs.recent_commit_date }}"
           export RECENT_COMMIT_TITLE="${{ steps.set_details.outputs.recent_commit_title }}"
@@ -46,18 +46,49 @@ jobs:
           export WORKFLOW_RUN_ID="${{ steps.set_details.outputs.workflow_run_id }}"
           export WORKFLOW_NAME="${{ steps.set_details.outputs.workflow_name }}"
           
-          # Update the HTML report with commit and workflow details
-          sed -i -e "s|#WORKFLOW_RUN_ID|$WORKFLOW_RUN_ID|g" \
-              -e "s|#WORKFLOW_NAME|$WORKFLOW_NAME|" \
-              -e "s|#RECENT_COMMIT_HASH|$RECENT_COMMIT_HASH|g" \
-              -e "s|#RECENT_COMMIT_AUTHOR_NAME|$RECENT_COMMIT_AUTHOR_NAME|" \
-              -e "s|#RECENT_COMMIT_AUTHOR_EMAIL|$RECENT_COMMIT_AUTHOR_EMAIL|" \
-              -e "s|#RECENT_COMMIT_DATE|$RECENT_COMMIT_DATE|" \
-              -e "s|#RECENT_COMMIT_TITLE|$RECENT_COMMIT_TITLE|" \
-              github-workflow-details.html
-
-          # Save the HTML content into an output variable
-          echo "::set-output name=html_report::$(cat github-workflow-details.html)"
+          HTML_CONTENT=$(cat <<EOF
+<!DOCTYPE html>
+<html lang="en">
+<body>
+  <div>
+    <h4>Workflow Details</h4>
+    <table cellspacing="3" bgcolor="#000000">
+      <tr bgcolor="#ffffff">
+        <th>Workflow Run Id</th>
+        <th>Workflow Name</th>
+        <th>Image Name</th>
+      </tr>
+      <tr bgcolor="#ffffff">
+        <td><a href="https://github.com/${{ github.repository }}/runs/#${WORKFLOW_RUN_ID}">${WORKFLOW_RUN_ID}</a></td>
+        <td>${WORKFLOW_NAME}</td>
+        <td>${{ steps.set_details.outputs.recent_commit_hash }}</td>
+      </tr>
+    </table>
+  </div>
+  
+  <div>
+    <h4>Recent Commit Details</h4>
+    <table cellspacing="3" bgcolor="#000000">
+      <tr bgcolor="#ffffff">
+        <th>Commit Hash</th>
+        <th>Commit Date</th>
+        <th>Commit Title</th>
+        <th>Commit Author Name</th>
+        <th>Commit Author Email</th>
+      </tr>
+      <tr bgcolor="#ffffff">
+        <td><a href="https://github.com/${{ github.repository }}/commit/${{ steps.set_details.outputs.recent_commit_hash }}">${{ steps.set_details.outputs.recent_commit_hash }}</a></td>
+        <td>${{ steps.set_details.outputs.recent_commit_date }}</td>
+        <td>${{ steps.set_details.outputs.recent_commit_title }}</td>
+        <td>${{ steps.set_details.outputs.recent_commit_author_name }}</td>
+        <td>${{ steps.set_details.outputs.recent_commit_author_email }}</td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>
+EOF
+          echo "::set-output name=html_report::$HTML_CONTENT"
 
       - name: Send Webhook Notification with HTML Report
         if: always()  # Send webhook even if the job fails
