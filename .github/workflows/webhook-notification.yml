@@ -3,14 +3,14 @@ name: Webhook Notification Workflow
 on:
   push:
     branches:
-      - main  # Trigger on push to main branch
+      - main
   pull_request:
     branches:
-      - main  # Trigger on PR to main branch
+      - main
 
 jobs:
   send-webhook:
-    runs-on: ubuntu-latest  # Use an Ubuntu runner
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
@@ -36,7 +36,6 @@ jobs:
 
       - name: Create HTML Report (local)
         run: |
-          # Navigate to the directory containing the HTML template
           cd .github/EmailTemplates
           export RECENT_COMMIT_HASH="${{ steps.set_details.outputs.recent_commit_hash }}"
           export RECENT_COMMIT_DATE="${{ steps.set_details.outputs.recent_commit_date }}"
@@ -57,7 +56,7 @@ jobs:
               github-workflow-details.html
 
       - name: Send Webhook Notification with HTML Report
-        if: always()  # Send webhook even if the job fails
+        if: always()
         run: |
           curl -X POST ${{ secrets.WEBHOOK_URL }} \
           -H "Content-Type: application/json" \
@@ -65,5 +64,5 @@ jobs:
             "incident-description": "GitHub workflow triggered for repository: '"${{ github.repository }}"'",
             "user": "'"${{ github.actor }}"'",
             "severity": "'"${{ job.status == 'success' && 'low' || 'high' }}"'",
-            "html_report": "'"$(cat .github/EmailTemplates/github-workflow-details.html | jq -R .)"'"
-          }'
+            "html_report": "'"$(cat .github/EmailTemplates/github-workflow-details.html)"'"
+        }'
