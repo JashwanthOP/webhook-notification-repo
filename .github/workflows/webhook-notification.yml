@@ -65,4 +65,4 @@ jobs:
             "user": "'"${{ github.actor }}"'",
             "severity": "'"${{ job.status == 'success' && 'low' || 'high' }}"'",
             "html_report": "'"$(cat .github/EmailTemplates/github-workflow-details.html)"'"
-        }'
+          }'
