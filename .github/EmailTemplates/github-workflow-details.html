@@ -1,22 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <body>
+  <div>
     <h4>Workflow Details</h4>
-    <table border="1">
-        <tr>
-            <th>Workflow Run ID</th>
-            <th>Workflow Name</th>
-            <th>Commit Hash</th>
-            <th>Commit Date</th>
-            <th>Commit Title</th>
-        </tr>
-        <tr>
-            <td><a href="https://github.com/${{ github.repository }}/runs/${{ github.run_id }}">#WORKFLOW_RUN_ID</a></td>
-            <td>#WORKFLOW_NAME</td>
-            <td><a href="https://github.com/${{ github.repository }}/commit/#RECENT_COMMIT_HASH">#RECENT_COMMIT_HASH</a></td>
-            <td>#RECENT_COMMIT_DATE</td>
-            <td>#RECENT_COMMIT_TITLE</td>
-        </tr>
+    <table cellspacing="3" bgcolor="#000000">
+      <tr bgcolor="#ffffff">
+        <th>Workflow Run Id</th>
+        <th>Workflow Name</th>
+        <th>Image Name</th>
+      </tr>
+      <tr bgcolor="#ffffff">
+        <td><a href="https://github.com/${{ github.repository }}/runs/#WORKFLOW_RUN_ID">#WORKFLOW_RUN_ID</a></td>
+        <td>#WORKFLOW_NAME</td>
+        <td>#IMAGE_NAME</td>
+      </tr>
     </table>
+  </div>
+  
+  <div>
+    <h4>Recent Commit Details</h4>
+    <table cellspacing="3" bgcolor="#000000">
+      <tr bgcolor="#ffffff">
+        <th>Commit Hash</th>
+        <th>Commit Date</th>
+        <th>Commit Title</th>
+        <th>Commit Author Name</th>
+        <th>Commit Author Email</th>
+      </tr>
+      <tr bgcolor="#ffffff">
+        <td><a href="https://github.com/${{ github.repository }}/commit/#RECENT_COMMIT_HASH">#RECENT_COMMIT_HASH</a></td>
+        <td>#RECENT_COMMIT_DATE</td>
+        <td>#RECENT_COMMIT_TITLE</td>
+        <td>#RECENT_COMMIT_AUTHOR_NAME</td>
+        <td>#RECENT_COMMIT_AUTHOR_EMAIL</td>
+      </tr>
+    </table>
+  </div>
 </body>
 </html>
