@@ -37,7 +37,7 @@ jobs:
       - name: Send Webhook Notification (Slack)
         if: always()  # Send webhook even if the job fails
         run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          curl -X POST ${{ secrets.WEBHOOK_URL }} \
           -H "Content-Type: application/json" \
           -d '{
             "text": "GitHub Workflow Details",
