@@ -1,52 +1,39 @@
-name: Webhook Notification Workflow
+name: Send HTML File to Slack
 
 on:
   push:
     branches:
-      - main  # Trigger on push to main branch
-  pull_request:
-    branches:
-      - main  # Trigger on PR to main branch
+      - main
 
 jobs:
-  send-webhook:
-    runs-on: ubuntu-latest  # Use an Ubuntu runner
+  notifySlack:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Set up date and commit details
-        id: set_details
+      - name: Read HTML content and send to Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          export RECENT_COMMIT_HASH="$(git show --format="%H" -s)"
-          export RECENT_COMMIT_DATE="$(git show --format="%cD" -s)"
-          export RECENT_COMMIT_TITLE="$(git show --format="%s" -s)"
-          export RECENT_COMMIT_AUTHOR_NAME="$(git show --format="%an" -s)"
-          export RECENT_COMMIT_AUTHOR_EMAIL="$(git show --format="%ae" -s)"
-          export WORKFLOW_RUN_ID="${{ github.run_id }}"
-          export WORKFLOW_NAME="${{ github.workflow }}"
-          echo "recent_commit_hash=$RECENT_COMMIT_HASH" >> $GITHUB_ENV
-          echo "recent_commit_date=$RECENT_COMMIT_DATE" >> $GITHUB_ENV
-          echo "recent_commit_title=$RECENT_COMMIT_TITLE" >> $GITHUB_ENV
-          echo "recent_commit_author_name=$RECENT_COMMIT_AUTHOR_NAME" >> $GITHUB_ENV
-          echo "recent_commit_author_email=$RECENT_COMMIT_AUTHOR_EMAIL" >> $GITHUB_ENV
-          echo "workflow_run_id=$WORKFLOW_RUN_ID" >> $GITHUB_ENV
-          echo "workflow_name=$WORKFLOW_NAME" >> $GITHUB_ENV
-
-      - name: Send Webhook Notification (Slack)
-        if: always()  # Send webhook even if the job fails
-        run: |
-          curl -X POST ${{ secrets.WEBHOOK_URL }} \
-          -H "Content-Type: application/json" \
-          -d '{
-            "text": "GitHub Workflow Details",
+          HTML_CONTENT=$(cat index.html | sed 's/"/\\"/g' | tr '\n' ' ')
+          curl -X POST "$SLACK_WEBHOOK_URL" \
+          -H 'Content-type: application/json' \
+          --data '{
             "blocks": [
               {
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "*Workflow Run ID:* ${{ env.workflow_run_id }}\n*Workflow Name:* ${{ env.workflow_name }}\n*Commit Hash:* ${{ env.recent_commit_hash }}\n*Commit Author:* ${{ env.recent_commit_author_name }}\n*Commit Date:* ${{ env.recent_commit_date }}\n*Commit Title:* ${{ env.recent_commit_title }}"
+                  "text": "*📄 index.html file pushed to main:*"
+                }
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "```'"$HTML_CONTENT"'```"
                 }
               }
             ]
