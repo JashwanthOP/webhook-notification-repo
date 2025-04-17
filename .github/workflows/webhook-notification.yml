@@ -81,7 +81,7 @@ jobs:
 EOF
           echo "html_report=$HTML_CONTENT" >> $GITHUB_ENV
 
-      - name: Send Webhook Notification with HTML Report to Slack
+      - name: Send Webhook Notification with HTML Report
         if: always()  # Send webhook even if the job fails
         uses: slackapi/slack-github-action@v2.0.0
         with:
